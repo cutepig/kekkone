@@ -21,6 +21,13 @@ class Vocabulary
     else
       "{#{category}}"
 
+  categories: ->
+    console.log @vocabulary
+    categories = []
+    for key, value of @vocabulary
+      categories.push key
+    categories
+
 class Phrases
 
   constructor: (@robot, @vocabulary) ->
@@ -48,14 +55,25 @@ module.exports = (robot) ->
   robot.respond /add phrase (.*)/i, (msg) ->
     phrase = msg.match[1]
     phrases.add phrase
-    msg.reply "Ok, osaan nyt lauseen \"#{phrase}\"."
+    msg.reply "Ok, osaan nyt lauseen `#{phrase}`."
     msg.finish()
 
   robot.respond /add word (\w+) (.*)/i, (msg) ->
     category = msg.match[1]
     word = msg.match[2]
     vocabulary.add category, word
-    msg.reply "Ok, osaan nyt sanan \"#{word}\" kategoriassa \"#{category}\"."
+    msg.reply "Ok, osaan nyt sanan `#{word}` kategoriassa `#{category}`."
+    msg.finish()
+
+  robot.respond /show categories/i, (msg) ->
+    text = 'Osaan seuraavat sanakategoriat: '
+    first = true
+    for category in vocabulary.categories()
+      console.log category
+      text += ', ' unless first
+      text += category
+      first = false
+    msg.send text
     msg.finish()
 
   robot.hear /(kekkone|kekkos)/i, (msg) ->
