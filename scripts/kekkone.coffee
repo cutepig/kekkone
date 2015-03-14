@@ -23,9 +23,13 @@ class Vocabulary
 
   categories: ->
     categories = []
-    for key, value of @vocabulary
-      categories.push key
+    for category, word of @vocabulary
+      categories.push category
     categories
+
+  fillWords: (msg, phrase) ->
+    phrase?.replace /\{(\w+)\}/g, (match, category) =>
+      @random msg, category
 
 class Phrases
 
@@ -41,29 +45,63 @@ class Phrases
     phrase
 
   random: (msg) ->
-    phrase = msg.random(@phrases)?.replace /\{(\w+)\}/g, (match, category) =>
-      @vocabulary.random msg, category
-    phrase or 'Saatanan tunarit!'
+    phrase = msg.random @phrases
+    if phrase
+      @vocabulary.fillWords msg, phrase
+    else
+      'Saatanan tunarit!'
+
+class Answers
+
+  constructor: (@robot, @vocabulary) ->
+    @answers = {}
+    @robot.brain.on 'loaded', =>
+      if @robot.brain.data.answers
+        @answers = @robot.brain.data.answers
+
+  add: (keyword, answer) ->
+    @answers[keyword] or= []
+    @answers[keyword].push answer
+    @robot.brain.data.answers = @answers
+    answer
+
+  random: (msg) ->
+    for keyword, answers of @answers
+      if msg.message.text.match ///#{keyword}///i
+        return @vocabulary.fillWords msg, msg.random(answers)
+    if @answers['general']
+      @vocabulary.fillWords msg, msg.random(@answers['general'])
+    else
+      'En minä tiiä!'
 
 module.exports = (robot) ->
 
   vocabulary = new Vocabulary robot
-  phrases = new Phrases robot, vocabulary
+  phrases    = new Phrases robot, vocabulary
+  answers    = new Answers robot, vocabulary
+
   sayCounter = null
 
-  robot.respond /add phrase (.*)/i, (msg) ->
-    phrase = msg.match[1]
-    phrases.add phrase
-    msg.reply "Ok, osaan nyt lauseen `#{phrase}`."
-    msg.finish()
-
-  robot.respond /add word (\w+) (.*)/i, (msg) ->
+  robot.respond /add word (.*): (.*)/i, (msg) ->
     category = msg.match[1]
     word = msg.match[2]
     vocabulary.add category, word
     msg.reply "Ok, osaan nyt sanan `#{word}` kategoriassa `#{category}`."
     msg.finish()
 
+  robot.respond /add phrase: (.*)/i, (msg) ->
+    phrase = msg.match[1]
+    phrases.add phrase
+    msg.reply "Ok, osaan nyt lauseen `#{phrase}`."
+    msg.finish()
+
+  robot.respond /add answer (.*): (.*)/i, (msg) ->
+    keyword = msg.match[1]
+    answer = msg.match[2]
+    answers.add keyword, answer
+    msg.reply "Ok, osaan nyt vastauksen `#{answer}` kysymykseen `#{keyword}`."
+    msg.finish()
+ 
   robot.respond /show categories/i, (msg) ->
     text = 'Osaan seuraavat sanakategoriat: '
     first = true
@@ -75,7 +113,10 @@ module.exports = (robot) ->
     msg.finish()
 
   robot.hear /(kekkone|kekkos)/i, (msg) ->
-    msg.send phrases.random(msg)
+    if msg.message.text.match /\?/
+      msg.send answers.random(msg)
+    else
+      msg.send phrases.random(msg)
 
   robot.catchAll (msg) ->
     if sayCounter is 0
