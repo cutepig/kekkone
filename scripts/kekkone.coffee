@@ -69,9 +69,8 @@ module.exports = (robot) ->
     text = 'Osaan seuraavat sanakategoriat: '
     first = true
     for category in vocabulary.categories()
-      console.log category
       text += ', ' unless first
-      text += category
+      text += "`#{category}`"
       first = false
     msg.send text
     msg.finish()
