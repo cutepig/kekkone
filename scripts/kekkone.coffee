@@ -16,7 +16,10 @@ class Vocabulary
     word
 
   random: (msg, category) ->
-    msg.random @vocabulary[category]
+    if @vocabulary[category]
+      msg.random @vocabulary[category]
+    else
+      "{#{category}}"
 
 class Phrases
 
@@ -32,8 +35,9 @@ class Phrases
     phrase
 
   random: (msg) ->
-    msg.random(@phrases).replace /\{(\w+)\}/g, (match, category) =>
+    phrase = msg.random(@phrases)?.replace /\{(\w+)\}/g, (match, category) =>
       @vocabulary.random msg, category
+    phrase or 'Saatanan tunarit!'
 
 module.exports = (robot) ->
 
