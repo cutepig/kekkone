@@ -20,7 +20,7 @@ class Vocabulary
 
 class Phrases
 
-  constructor: (@robot) ->
+  constructor: (@robot, @vocabulary) ->
     @phrases = []
     @robot.brain.on 'loaded', =>
       if @robot.brain.data.phrases
@@ -32,26 +32,35 @@ class Phrases
     phrase
 
   random: (msg) ->
-    msg.random @phrases
+    msg.random(@phrases).replace /\{(\w+)\}/g, (match, category) =>
+      @vocabulary.random msg, category
 
 module.exports = (robot) ->
 
   vocabulary = new Vocabulary robot
-  phrases = new Phrases robot
+  phrases = new Phrases robot, vocabulary
+  sayCounter = null
 
   robot.respond /add phrase (.*)/i, (msg) ->
     phrase = msg.match[1]
     phrases.add phrase
     msg.reply "Ok, osaan nyt lauseen \"#{phrase}\"."
+    msg.finish()
 
   robot.respond /add word (\w+) (.*)/i, (msg) ->
     category = msg.match[1]
     word = msg.match[2]
     vocabulary.add category, word
     msg.reply "Ok, osaan nyt sanan \"#{word}\" kategoriassa \"#{category}\"."
+    msg.finish()
 
-  robot.respond /sano jotain/i, (msg) ->
-    phrase = phrases.random(msg).replace /\{(\w+)\}/g, (match, category) ->
-      vocabulary.random msg, category
-    msg.send phrase
+  robot.hear /kekkone/i, (msg) ->
+    msg.send phrases.random(msg)
+
+  robot.catchAll (msg) ->
+    if sayCounter is 0
+      msg.send phrases.random(msg)
+    if sayCounter in [0, null]
+      sayCounter = Math.floor(Math.random() * (50 - 10) + 10)
+    sayCounter--
 
