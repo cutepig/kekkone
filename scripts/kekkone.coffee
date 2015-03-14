@@ -58,7 +58,7 @@ module.exports = (robot) ->
     msg.reply "Ok, osaan nyt sanan \"#{word}\" kategoriassa \"#{category}\"."
     msg.finish()
 
-  robot.hear /kekkone/i, (msg) ->
+  robot.hear /(kekkone|kekkos)/i, (msg) ->
     msg.send phrases.random(msg)
 
   robot.catchAll (msg) ->
