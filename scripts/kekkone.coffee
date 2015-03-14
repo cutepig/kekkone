@@ -22,7 +22,6 @@ class Vocabulary
       "{#{category}}"
 
   categories: ->
-    console.log @vocabulary
     categories = []
     for key, value of @vocabulary
       categories.push key
