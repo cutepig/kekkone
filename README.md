@@ -12,10 +12,12 @@ Urho Kaleva Kekkone. The president of Finland 1956-1982 and a chat bot.
 
 ## Examples
 
-    add word food: hamburger
+    add word color: green
     add word color: red
+    add word food: hamburger
     add word president: Kekkonen
     add phrase: Hello world!
     add phrase: Did you see that {color} {vehicle}?
     add answer who: I would guess {president}.
+    add answer where: There.
 
