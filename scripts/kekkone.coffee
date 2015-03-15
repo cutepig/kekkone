@@ -23,13 +23,19 @@ class Vocabulary
 
   categories: ->
     categories = []
-    for category, word of @vocabulary
+    for category, words of @vocabulary
       categories.push category
     categories
 
   fillWords: (msg, phrase) ->
     phrase?.replace /\{(\w+)\}/g, (match, category) =>
       @random msg, category
+
+  count: ->
+    count = 0
+    for category, words of @vocabulary
+      count += words.length
+    count
 
 class Phrases
 
@@ -50,6 +56,9 @@ class Phrases
       @vocabulary.fillWords msg, phrase
     else
       'Saatanan tunarit!'
+
+  count: ->
+    @phrases.length
 
 class Answers
 
@@ -73,6 +82,12 @@ class Answers
       @vocabulary.fillWords msg, msg.random(@answers['general'])
     else
       'En minä tiiä!'
+
+  count: ->
+    count = 0
+    for keyword, answers of @answers
+      count += answers.length
+    count
 
 module.exports = (robot) ->
 
@@ -112,6 +127,12 @@ module.exports = (robot) ->
     msg.send text
     msg.finish()
 
+  robot.respond /show stats/i, (msg) ->
+    msg.send "Osaan `#{phrases.count()}` lausetta, " +
+             "`#{answers.count()}` vastausta kysymyksiin ja " +
+             "`#{vocabulary.count()}` sanaa."
+    msg.finish()
+
   robot.hear /(kekkone|kekkos)/i, (msg) ->
     if msg.message.text.match /\?/
       msg.send answers.random(msg)
@@ -120,6 +141,7 @@ module.exports = (robot) ->
 
   robot.catchAll (msg) ->
     if sayCounter is 0
+      # TODO: Also answer to questions here
       msg.send phrases.random(msg)
     if sayCounter in [0, null]
       sayCounter = Math.floor(Math.random() * (50 - 10) + 10)
