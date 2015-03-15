@@ -89,61 +89,75 @@ class Answers
       count += answers.length
     count
 
-module.exports = (robot) ->
+class Kekkone
 
-  vocabulary = new Vocabulary robot
-  phrases    = new Phrases robot, vocabulary
-  answers    = new Answers robot, vocabulary
+  constructor: (@robot) ->
+    @vocabulary = new Vocabulary @robot
+    @phrases = new Phrases @robot, @vocabulary
+    @answers = new Answers @robot, @vocabulary
+    @talkInterval = null
 
-  sayCounter = null
+  start: ->
+    @robot.respond /add word (.*): (.*)/i, (msg) =>
+      @addWord msg, msg.match[1], msg.match[2]
+    @robot.respond /add phrase: (.*)/i, (msg) =>
+      @addPhrase msg, msg.match[1]
+    @robot.respond /add answer (.*): (.*)/i, (msg) =>
+      @addAnswer msg, msg.match[1], msg.match[2]
+   
+    @robot.respond /show categories/i, (msg) =>
+      @showCategories msg
+    @robot.respond /show stats/i, (msg) =>
+      @showStats msg
 
-  robot.respond /add word (.*): (.*)/i, (msg) ->
-    category = msg.match[1]
-    word = msg.match[2]
-    vocabulary.add category, word
+    @robot.hear /(kekkone|kekkos)/i, (msg) =>
+      @talk msg
+
+    @robot.catchAll (msg) =>
+      if @talkInterval is 0
+        @talk msg
+      if @talkInterval in [0, null]
+        @talkInterval = Math.floor(Math.random() * (50 - 10) + 10)
+      @talkInterval--
+
+  talk: (msg) ->
+    if msg.message.text.match /\?/
+      msg.send @answers.random(msg)
+    else
+      msg.send @phrases.random(msg)
+
+  addWord: (msg, category, word) ->
+    @vocabulary.add category, word
     msg.reply "Ok, osaan nyt sanan `#{word}` kategoriassa `#{category}`."
     msg.finish()
 
-  robot.respond /add phrase: (.*)/i, (msg) ->
-    phrase = msg.match[1]
-    phrases.add phrase
+  addPhrase: (msg, phrase) ->
+    @phrases.add phrase
     msg.reply "Ok, osaan nyt lauseen `#{phrase}`."
     msg.finish()
 
-  robot.respond /add answer (.*): (.*)/i, (msg) ->
-    keyword = msg.match[1]
-    answer = msg.match[2]
-    answers.add keyword, answer
+  addAnswer: (msg, keyword, answer) ->
+    @answers.add keyword, answer
     msg.reply "Ok, osaan nyt vastauksen `#{answer}` kysymykseen `#{keyword}`."
     msg.finish()
- 
-  robot.respond /show categories/i, (msg) ->
+
+  showCategories: (msg) ->
     text = 'Osaan seuraavat sanakategoriat: '
     first = true
-    for category in vocabulary.categories()
+    for category in @vocabulary.categories()
       text += ', ' unless first
       text += "`#{category}`"
       first = false
     msg.send text
     msg.finish()
 
-  robot.respond /show stats/i, (msg) ->
-    msg.send "Osaan `#{phrases.count()}` lausetta, " +
-             "`#{answers.count()}` vastausta kysymyksiin ja " +
-             "`#{vocabulary.count()}` sanaa."
+  showStats: (msg) ->
+    msg.send "Osaan `#{@phrases.count()}` lausetta, " +
+             "`#{@answers.count()}` vastausta kysymyksiin ja " +
+             "`#{@vocabulary.count()}` sanaa."
     msg.finish()
 
-  robot.hear /(kekkone|kekkos)/i, (msg) ->
-    if msg.message.text.match /\?/
-      msg.send answers.random(msg)
-    else
-      msg.send phrases.random(msg)
-
-  robot.catchAll (msg) ->
-    if sayCounter is 0
-      # TODO: Also answer to questions here
-      msg.send phrases.random(msg)
-    if sayCounter in [0, null]
-      sayCounter = Math.floor(Math.random() * (50 - 10) + 10)
-    sayCounter--
+module.exports = (robot) ->
+  kekkone = new Kekkone robot
+  kekkone.start()
 
