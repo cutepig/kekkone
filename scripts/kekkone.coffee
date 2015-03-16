@@ -206,7 +206,7 @@ class Kekkone
   showStats: (msg) ->
     msg.send "I know `#{@phrases.count()}` phrases, " +
              "`#{@answers.count()}` answers and " +
-             "`#{@vocabulary.count()}` word."
+             "`#{@vocabulary.count()}` words."
     msg.finish()
 
 module.exports = (robot) ->
