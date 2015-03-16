@@ -159,17 +159,17 @@ class Kekkone
 
   addWord: (msg, category, word) ->
     @vocabulary.add category, word
-    msg.reply "Added word '#{word}' to a category '#{category}'."
+    msg.send "Added word '#{word}' to a category '#{category}'."
     msg.finish()
 
   addPhrase: (msg, phrase) ->
     @phrases.add phrase
-    msg.reply "Added phrase '#{phrase}'."
+    msg.send "Added phrase '#{phrase}'."
     msg.finish()
 
   addAnswer: (msg, keyword, answer) ->
     @answers.add keyword, answer
-    msg.reply "Added answer '#{answer}' for a keyword '#{keyword}'."
+    msg.send "Added answer '#{answer}' for a keyword '#{keyword}'."
     msg.finish()
 
   deleteWord: (msg, category, word) ->
