@@ -15,6 +15,14 @@ class Vocabulary
     @robot.brain.data.vocabulary = @vocabulary
     word
 
+  delete: (category, word) ->
+    for w in @vocabulary[category] or []
+      if w is word
+        @vocabulary[category].splice w, 1
+        delete @vocabulary[category] unless @vocabulary[category].length
+        return word
+    null
+
   random: (msg, category) ->
     if @vocabulary[category]
       msg.random @vocabulary[category]
@@ -50,6 +58,13 @@ class Phrases
     @robot.brain.data.phrases = @phrases
     phrase
 
+  delete: (phrase) ->
+    for p in @phrases
+      if p is phrase
+        @phrases.splice p, 1
+        return phrase
+    null
+
   random: (msg) ->
     phrase = msg.random @phrases
     if phrase
@@ -73,6 +88,14 @@ class Answers
     @answers[keyword].push answer
     @robot.brain.data.answers = @answers
     answer
+
+  delete: (keyword, answer) ->
+    for a in @answers[keyword] or []
+      if a is answer
+        @answers[keyword].splice a, 1
+        delete @answers[keyword] unless @answers[keyword].length
+        return answer
+    null
 
   random: (msg) ->
     for keyword, answers of @answers
@@ -104,7 +127,14 @@ class Kekkone
       @addPhrase msg, msg.match[1]
     @robot.respond /add answer (.*): (.*)/i, (msg) =>
       @addAnswer msg, msg.match[1], msg.match[2]
-   
+
+    @robot.respond /delete word (.*): (.*)/i, (msg) =>
+      @deleteWord msg, msg.match[1], msg.match[2]
+    @robot.respond /delete phrase: (.*)/i, (msg) =>
+      @deletePhrase msg, msg.match[1]
+    @robot.respond /delete answer (.*): (.*)/i, (msg) =>
+      @deleteAnswer msg, msg.match[1], msg.match[2]
+
     @robot.respond /show categories/i, (msg) =>
       @showCategories msg
     @robot.respond /show stats/i, (msg) =>
@@ -125,6 +155,7 @@ class Kekkone
       msg.send @answers.random(msg)
     else
       msg.send @phrases.random(msg)
+    msg.finish()
 
   addWord: (msg, category, word) ->
     @vocabulary.add category, word
@@ -139,6 +170,27 @@ class Kekkone
   addAnswer: (msg, keyword, answer) ->
     @answers.add keyword, answer
     msg.reply "Ok, osaan nyt vastauksen `#{answer}` kysymykseen `#{keyword}`."
+    msg.finish()
+
+  deleteWord: (msg, category, word) ->
+    if @vocabulary.delete category, word
+      msg.send "Deleted word '#{word}'."
+    else
+      msg.send 'Not found.'
+    msg.finish()
+
+  deletePhrase: (msg, phrase) ->
+    if @phrases.delete phrase
+      msg.send "Deleted phrase '#{phrase}'."
+    else
+      msg.send 'Not found.'
+    msg.finish()
+
+  deleteAnswer: (msg, keyword, answer) ->
+    if @answers.delete keyword, answer
+      msg.send "Deleted answer '#{answer}'."
+    else
+      msg.send 'Not found.'
     msg.finish()
 
   showCategories: (msg) ->

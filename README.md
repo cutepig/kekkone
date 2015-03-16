@@ -7,6 +7,9 @@ Urho Kaleva Kekkone. The president of Finland 1956-1982 and a chat bot.
     add word <category>: <word>
     add phrase: <phrase>
     add answer <keyword>: <answer>
+    delete word <category>: <word>
+    delete phrase: <phrase>
+    delete answer <keyword>: <answer>
     show categories
     show stats
 
