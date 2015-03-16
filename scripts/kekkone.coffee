@@ -70,7 +70,7 @@ class Phrases
     if phrase
       @vocabulary.fillWords msg, phrase
     else
-      'Saatanan tunarit!'
+      'Morons!'
 
   count: ->
     @phrases.length
@@ -104,7 +104,7 @@ class Answers
     if @answers['general']
       @vocabulary.fillWords msg, msg.random(@answers['general'])
     else
-      'En minä tiiä!'
+      'Beats me?'
 
   count: ->
     count = 0
@@ -159,17 +159,17 @@ class Kekkone
 
   addWord: (msg, category, word) ->
     @vocabulary.add category, word
-    msg.reply "Ok, osaan nyt sanan `#{word}` kategoriassa `#{category}`."
+    msg.reply "Added word '#{word}' to a category '#{category}'."
     msg.finish()
 
   addPhrase: (msg, phrase) ->
     @phrases.add phrase
-    msg.reply "Ok, osaan nyt lauseen `#{phrase}`."
+    msg.reply "Added phrase '#{phrase}'."
     msg.finish()
 
   addAnswer: (msg, keyword, answer) ->
     @answers.add keyword, answer
-    msg.reply "Ok, osaan nyt vastauksen `#{answer}` kysymykseen `#{keyword}`."
+    msg.reply "Added answer '#{answer}' for a keyword '#{keyword}'."
     msg.finish()
 
   deleteWord: (msg, category, word) ->
@@ -194,7 +194,7 @@ class Kekkone
     msg.finish()
 
   showCategories: (msg) ->
-    text = 'Osaan seuraavat sanakategoriat: '
+    text = 'I know the following word categories: '
     first = true
     for category in @vocabulary.categories()
       text += ', ' unless first
@@ -204,9 +204,9 @@ class Kekkone
     msg.finish()
 
   showStats: (msg) ->
-    msg.send "Osaan `#{@phrases.count()}` lausetta, " +
-             "`#{@answers.count()}` vastausta kysymyksiin ja " +
-             "`#{@vocabulary.count()}` sanaa."
+    msg.send "I know `#{@phrases.count()}` phrases, " +
+             "`#{@answers.count()}` answers and " +
+             "`#{@vocabulary.count()}` word."
     msg.finish()
 
 module.exports = (robot) ->
